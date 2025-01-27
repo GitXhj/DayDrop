@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DAYDROP</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+    <link rel="stylesheet" type="text/css" href="./css/style.css">
+
+</head>
+<body>
+    <div class="container">
+        <div class="tab-navigation">
+            <button class="tab-button active" onclick="switchTab('countdown')">倒数日</button>
+            <button class="tab-button" onclick="switchTab('countup')">正数日</button>
+        </div>
+
+        <div id="emptyState" class="empty-state">
+            <span class="material-icons" style="font-size: 48px; margin-bottom: 16px;">event</span>
+            <h2>还没有添加日期</h2>
+        </div>
+
+        <div id="countdownList" class="countdown-list"></div>
+    </div>
+
+    <button class="add-btn" onclick="showAddModal()">
+        <span class="material-icons">add</span>
+    </button>
+
+    <button class="about-btn" onclick="showAboutModal()">
+        <span class="material-icons">info</span>
+        关于
+    </button>
+
+    <div id="addModal" class="modal">
+        <div class="modal-content">
+            <h2 class="modal-title" id="addModalTitle">添加事件</h2>
+            <input type="text" id="eventTitle" class="input-field" placeholder="标题">
+            <input type="datetime-local" id="eventDate" class="input-field">
+            <div class="modal-buttons">
+                <button class="button button-secondary" onclick="hideAddModal()">取消</button>
+                <button class="button button-primary" onclick="addEvent()">确定</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="aboutModal" class="modal about-modal">
+        <div class="modal-content">
+            <h2 class="modal-title">关于</h2>
+            <div class="about-info">
+                <p>DayDrop</p>
+                <p>版本：4.0.0</p>
+                <hr>
+                <p>作者：星河间</p>
+                <a href="开源代码">开源代码</a>
+                <p>
+                				<a href="https://www.magicalapk.com/app/share/app?id=33382">应用乐园</a>
+                				<p>
+                <a href="donate.html">捐赠</a>
+                </p>
+            </div>
+            <div class="modal-buttons">
+                <button class="button button-primary" onclick="hideAboutModal()">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="detailView" class="detail-view">
+        <button class="back-btn" onclick="hideDetailView()">
+            <span class="material-icons">arrow_back</span>
+            返回
+        </button>
+        <div class="circle-container">
+            <div class="countdown-circle">
+                <svg class="progress" viewBox="0 0 100 100">
+                    <circle id="progressCircle" cx="50" cy="50" r="46" fill="none" 
+                            stroke="var(--primary)" stroke-width="8" 
+                            stroke-linecap="round"></circle>
+                </svg>
+                <div class="remaining-days" id="detailDays"></div>
+            </div>
+            <div class="detail-info">
+                <h2 id="detailTitle" style="margin-bottom: 8px;"></h2>
+                <p id="detailDate" style="color: var(--outline);"></p>
+                <button class="button button-secondary" style="margin-top: 24px;" 
+                        onclick="deleteEvent(selectedEventIndex)">删除</button>
+            </div>
+        </div>
+    </div>
+    
+<script src="./js/script.js"></script
+
+
+</body>
+</html>
