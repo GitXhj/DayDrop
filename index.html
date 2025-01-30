@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>倒数日</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        }
+
+        :root {
+            --primary: #6750A4;
+            --on-primary: #FFFFFF;
+            --surface: #FFFBFE;
+            --surface-variant: #E7E0EC;
+            --outline: #79747E;
+            --urgent: #CF1B1B;
+            --warning: #FFA000;
+            --safe: #2E7D32;
+        }
+
+        body {
+            background-color: var(--surface);
+            min-height: 100vh;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 16px;
+        }
+
+        .top-bar {
+            display: flex;
+            justify-content: flex-end;
+            padding: 16px;
+            position: sticky;
+            top: 0;
+            background-color: var(--surface);
+            z-index: 100;
+        }
+
+        .add-btn {
+            background-color: var(--primary);
+            color: var(--on-primary);
+            border: none;
+            width: 56px;
+            height: 56px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .add-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 70vh;
+            text-align: center;
+            color: var(--outline);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .countdown-list {
+            display: grid;
+            gap: 16px;
+            margin-top: 16px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .countdown-card {
+            background: #fff;
+            border-radius: 16px;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .countdown-card::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 4px;
+            height: 100%;
+            background-color: var(--primary);
+            transition: background-color 0.3s ease;
+        }
+
+        .countdown-card.urgent::after {
+            background-color: var(--urgent);
+        }
+
+        .countdown-card.warning::after {
+            background-color: var(--warning);
+        }
+
+        .countdown-card.safe::after {
+            background-color: var(--safe);
+        }
+
+        .countdown-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+
+        .countdown-info {
+            flex: 1;
+            margin-left: 12px;
+        }
+
+        .countdown-title {
+            font-size: 16px;
+            color: #1D1B20;
+            margin-bottom: 4px;
+            font-weight: 500;
+        }
+
+        .countdown-date {
+            font-size: 14px;
+            color: var(--outline);
+        }
+
+        .delete-btn {
+            color: var(--outline);
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 8px;
+            transition: color 0.3s ease;
+            opacity: 0.8;
+        }
+
+        .delete-btn:hover {
+            color: var(--urgent);
+            opacity: 1;
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-content {
+            background: #fff;
+            padding: 24px;
+            border-radius: 28px;
+            width: 90%;
+            max-width: 400px;
+            animation: scaleIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .modal-title {
+            font-size: 24px;
+            margin-bottom: 16px;
+            color: #1D1B20;
+            font-weight: 500;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid var(--outline);
+            border-radius: 8px;
+            margin-bottom: 16px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .modal-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+        }
+
+        .button {
+            padding: 10px 24px;
+            border-radius: 100px;
+            border: none;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .button-primary {
+            background: var(--primary);
+            color: var(--on-primary);
+        }
+
+        .button-primary:hover {
+            box-shadow: 0 2px 4px rgba(103, 80, 164, 0.3);
+        }
+
+        .button-secondary {
+            background: var(--surface-variant);
+            color: var(--primary);
+        }
+
+        .button-secondary:hover {
+            background: #DFD8E4;
+        }
+
+        .detail-view {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--surface);
+            z-index: 1000;
+            padding: 24px;
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            margin-bottom: 24px;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+            padding: 8px;
+            border-radius: 8px;
+            transition: background-color 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background-color: var(--surface-variant);
+        }
+
+        .circle-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 70vh;
+        }
+
+        .countdown-circle {
+            width: 240px;
+            height: 240px;
+            border-radius: 50%;
+            border: 12px solid var(--surface-variant);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            margin-bottom: 32px;
+            transition: all 0.3s ease;
+        }
+
+        .progress {
+            position: absolute;
+            top: -12px;
+            left: -12px;
+            width: calc(100% + 24px);
+            height: calc(100% + 24px);
+            transform: rotate(-90deg);
+        }
+
+        .progress circle {
+            transition: stroke-dashoffset 1s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .remaining-days {
+            font-size: 48px;
+            color: var(--primary);
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .detail-info {
+            text-align: center;
+        }
+
+        .about-btn {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: var(--surface-variant);
+            color: var(--primary);
+            border: none;
+            padding: 8px 24px;
+            border-radius: 100px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-weight: 500;
+        }
+
+        .about-btn:hover {
+            transform: translateX(-50%) translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+
+        .about-modal .modal-content {
+            text-align: center;
+        }
+
+        .about-info {
+            color: var(--outline);
+            line-height: 1.6;
+            margin: 16px 0;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes scaleIn {
+            from { 
+                transform: scale(0.95);
+                opacity: 0;
+            }
+            to { 
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+
+        @keyframes slideOut {
+            from { transform: translateY(0); }
+            to { transform: translateY(100%); }
+        }
+
+        .slide-in {
+            animation: slideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        .slide-out {
+            animation: slideOut 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        @media (max-width: 480px) {
+            .countdown-circle {
+                width: 200px;
+                height: 200px;
+            }
+
+            .remaining-days {
+                font-size: 40px;
+            }
+
+            .modal-content {
+                padding: 20px;
+            }
+
+            .countdown-card {
+                padding: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="top-bar">
+            <button class="add-btn" onclick="showAddModal()">
+                <span class="material-icons">add</span>
+            </button>
+        </div>
+
+        <div id="emptyState" class="empty-state">
+            <span class="material-icons" style="font-size: 48px; margin-bottom: 16px;">event</span>
+            <h2>还没有添加倒数日程</h2>
+            <p>点击右上角的加号添加新的日程</p>
+        </div>
+
+        <div id="countdownList" class="countdown-list"></div>
+    </div>
+
+    <button class="about-btn" onclick="showAboutModal()">
+        <span class="material-icons">info</span>
+        关于
+    </button>
+
+    <div id="addModal" class="modal">
+        <div class="modal-content">
+            <h2 class="modal-title">添加倒数日程</h2>
+            <input type="text" id="eventTitle" class="input-field" placeholder="标题">
+            <input type="datetime-local" id="eventDate" class="input-field">
+            <div class="modal-buttons">
+                <button class="button button-secondary" onclick="hideAddModal()">取消</button>
+                <button class="button button-primary" onclick="addCountdown()">确定</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="aboutModal" class="modal about-modal">
+        <div class="modal-content">
+            <h2 class="modal-title">关于应用</h2>
+            <div class="about-info">
+                <p>倒数日应用</p>
+                <p>版本：1.0.0</p>
+                <p>作者：星河间</p>
+            </div>
+            <div class="modal-buttons">
+                <button class="button button-primary" onclick="hideAboutModal()">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="detailView" class="detail-view">
+        <button class="back-btn" onclick="hideDetailView()">
+            <span class="material-icons">arrow_back</span>
+            返回
+        </button>
+        <div class="circle-container">
+            <div class="countdown-circle">
+                <svg class="progress" viewBox="0 0 100 100">
+                    <circle id="progressCircle" cx="50" cy="50" r="46" fill="none" 
+                            stroke="var(--primary)" stroke-width="8" 
+                            stroke-linecap="round"></circle>
+                </svg>
+                <div class="remaining-days" id="detailDays"></div>
+            </div>
+            <div class="detail-info">
+                <h2 id="detailTitle" style="margin-bottom: 8px;"></h2>
+                <p id="detailDate" style="color: var(--outline);"></p>
+                <button class="button button-secondary" style="margin-top: 24px;"
+                        onclick="deleteCountdown(selectedCountdown)">删除</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let countdowns = JSON.parse(localStorage.getItem('countdowns')) || [];
+        let selectedCountdown = null;
+
+        function getTimeColor(days) {
+            if (days <= 7) return 'urgent';
+            if (days <= 30) return 'warning';
+            return 'safe';
+        }
+
+        function updateUI() {
+            const emptyState = document.getElementById('emptyState');
+            const countdownList = document.getElementById('countdownList');
+            
+            if (countdowns.length === 0) {
+                emptyState.style.display = 'flex';
+                countdownList.style.display = 'none';
+            } else {
+                emptyState.style.display = 'none';
+                countdownList.style.display = 'grid';
+                
+                countdownList.innerHTML = countdowns.map((countdown, index) => {
+                    const days = calculateDaysLeft(countdown.date);
+                    const timeClass = getTimeColor(parseInt(days));
+                    return `
+                        <div class="countdown-card ${timeClass}" onclick="showDetailView(${index})">
+                            <div class="countdown-info">
+                                <div class="countdown-title">${countdown.title}</div>
+                                <div class="countdown-date">${formatDate(countdown.date)}</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 24px; color: var(--${timeClass}); margin-bottom: 4px; font-weight: 500;">
+                                    ${days}天
+                                </div>
+                                <button class="delete-btn" onclick="event.stopPropagation(); deleteCountdown(${index})">
+                                    <span class="material-icons">delete</span>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+        }
+
+        function showAddModal() {
+            const modal = document.getElementById('addModal');
+            modal.style.display = 'flex';
+            document.getElementById('eventTitle').value = '';
+            document.getElementById('eventDate').value = '';
+            document.getElementById('eventTitle').focus();
+        }
+
+        function hideAddModal() {
+            document.getElementById('addModal').style.display = 'none';
+        }
+
+        function showAboutModal() {
+            const modal = document.getElementById('aboutModal');
+            modal.style.display = 'flex';
+        }
+
+        function hideAboutModal() {
+            document.getElementById('aboutModal').style.display = 'none';
+        }
+
+        function addCountdown() {
+            const title = document.getElementById('eventTitle').value.trim();
+            const date = document.getElementById('eventDate').value;
+
+            if (!title || !date) {
+                alert('请填写完整信息');
+                return;
+            }
+
+            countdowns.push({ title, date });
+            countdowns.sort((a, b) => new Date(a.date) - new Date(b.date));
+            localStorage.setItem('countdowns', JSON.stringify(countdowns));
+            hideAddModal();
+            updateUI();
+        }
+
+        function deleteCountdown(index) {
+            if (confirm('确定要删除这个倒数日程吗？')) {
+                countdowns.splice(index, 1);
+                localStorage.setItem('countdowns', JSON.stringify(countdowns));
+                hideDetailView();
+                updateUI();
+            }
+        }
+
+        function calculateDaysLeft(date) {
+            const diff = new Date(date) - new Date();
+            return Math.ceil(diff / (1000 * 60 * 60 * 24));
+        }
+
+        function formatDate(date) {
+            return new Date(date).toLocaleString('zh-CN', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        function showDetailView(index) {
+            selectedCountdown = index;
+            const countdown = countdowns[index];
+            const detailView = document.getElementById('detailView');
+            const days = calculateDaysLeft(countdown.date);
+            const timeClass = getTimeColor(days);
+            
+            document.getElementById('detailTitle').textContent = countdown.title;
+            document.getElementById('detailDate').textContent = formatDate(countdown.date);
+            document.getElementById('detailDays').textContent = `${days}天`;
+            document.getElementById('detailDays').style.color = `var(--${timeClass})`;
+
+            const circle = document.getElementById('progressCircle');
+            circle.style.stroke = `var(--${timeClass})`;
+            const circumference = 2 * Math.PI * 46;
+            const totalDays = 365;
+            const progress = Math.max(0, Math.min(1, days / totalDays));
+            
+            circle.style.strokeDasharray = `${circumference} ${circumference}`;
+            circle.style.strokeDashoffset = circumference * (1 - progress);
+
+            detailView.style.display = 'block';
+            detailView.classList.add('slide-in');
+        }
+
+        function hideDetailView() {
+            const detailView = document.getElementById('detailView');
+            detailView.classList.remove('slide-in');
+            detailView.classList.add('slide-out');
+            setTimeout(() => {
+                detailView.style.display = 'none';
+                detailView.classList.remove('slide-out');
+            }, 300);
+        }
+
+        updateUI();
+
+        window.onclick = function(event) {
+            const addModal = document.getElementById('addModal');
+            const aboutModal = document.getElementById('aboutModal');
+            if (event.target === addModal) {
+                hideAddModal();
+            }
+            if (event.target === aboutModal) {
+                hideAboutModal();
+            }
+        }
+
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                hideAddModal();
+                hideAboutModal();
+                hideDetailView();
+            }
+        });
+    </script>
+</body>
+</html>
